@@ -64,19 +64,20 @@ func on_click(is_auto = false):
 			for card in dragged_stack:
 				card.reparent(get_parent().get_parent())
 			if is_auto:
-				if !auto_click():
+				if auto_click():
+					return true
+				else:
 					for card in dragged_stack:
+						card.get_node("ShakeAnimation").stop()
 						card.get_node("ShakeAnimation").play("shake")
 					return false
-					pass
-				else:
-					return true
 			else:
 				is_being_dragged = true
 		else:
 			table.toggle_action_happening()
 			if !parent_area.name.contains("Foundation"):
 				for card in parent_area.get_card_stack(self):
+					card.get_node("ShakeAnimation").stop()
 					card.get_node("ShakeAnimation").play("shake")
 
 
@@ -105,16 +106,19 @@ func auto_click():
 	for i in range(4):
 		if !move_occured:
 			detected_area = get_tree().get_root().get_node("Main/Table/FreeCell" + str(i + 1))
+			if parent_area.name.contains("FreeCell"):
+				detected_area = null
+				break
 			if detected_area.can_place_card(dragged_stack):
 				move_occured = true
 	
 	make_move(detected_area)
 	
-	if detected_area == parent_area:
+	if detected_area != parent_area and move_occured:
+		return true
+	else:
 		#parent_area = get_parent() #Add this line back in if you want animations to work. You still have to figure out how to make the cards show on top though.
 		return false
-	else:
-		return move_occured
 
 
 #This checks if a stack of cards can be dragged by the player.
@@ -139,7 +143,9 @@ func can_drag_stack(stack):
 #the cards will be moved back to the parent_area.
 #If a move is being undone, toggle_action_happening will not be called since the move was not
 #made from inside the card.
-func make_move(destination, check_move = true):
+#If the card is being simulated, the simulation must know if the move is valid, so the return value
+#for this function serves only to tell simulate() if a move was valid.
+func make_move(destination, check_move = true, simulating = false):
 	#An assumption is being made here that the only time check_move will be false is when a move is being undone.
 	#If the move is being undone, the cards have not yet been removed from their parent area.
 	if !check_move:
@@ -149,7 +155,8 @@ func make_move(destination, check_move = true):
 	for card in dragged_stack:
 		card.get_parent().remove_child(card)
 	
-	if !check_move:
+	var valid_move = false
+	if !check_move and !simulating:
 		destination.add_card(dragged_stack)
 	elif destination != null and destination.can_place_card(dragged_stack):
 		#Do not increment the move count if a card is moved between two empty areas.
@@ -157,13 +164,15 @@ func make_move(destination, check_move = true):
 		if parent_area.name.contains("FreeCell"):
 			if destination.name.contains("FreeCell"):
 				add_move = false
-			if destination.name.contains("Column"):
+			elif destination.name.contains("Column"):
 				if destination.is_empty():
 					add_move = false
 		elif parent_area.name.contains("Column") and parent_area.is_empty():
 			if destination.name.contains("FreeCell"):
 				add_move = false
-		destination.add_card(dragged_stack)
+			elif destination.name.contains("Column") and parent_area.is_empty():
+				add_move = false
+		destination.add_card(dragged_stack, table.simulating)
 		table.toggle_action_happening()
 		
 		var move = table.Move.new()
@@ -174,9 +183,11 @@ func make_move(destination, check_move = true):
 		
 		if parent_area != destination:
 			table.move_made(move)
+		valid_move = true
 	else:
 		parent_area.add_card(dragged_stack)
 		table.toggle_action_happening()
 	
 	$DragArea.set_deferred("disabled", true)
 	$CardArea.set_deferred("disabled", false)
+	return valid_move

@@ -13,6 +13,9 @@ config_version=5
 config/name="FreeCell"
 run/main_scene="res://Scenes/main.tscn"
 config/features=PackedStringArray("4.0", "GL Compatibility")
+run/max_fps=60
+run/low_processor_mode=true
+run/low_processor_mode_sleep_usec=1000
 boot_splash/show_image=false
 config/icon="res://freecellicon.png"
 config/macos_native_icon="res://Assets/freecellicon.icns"
@@ -51,6 +54,11 @@ Settings={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194333,"key_label":0,"unicode":0,"echo":false,"script":null)
 ]
 }
+"New Numbered Game"={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194334,"key_label":0,"unicode":0,"echo":false,"script":null)
+]
+}
 Undo={
 "deadzone": 0.5,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":true,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":90,"key_label":0,"unicode":0,"echo":false,"script":null)
@@ -76,11 +84,24 @@ Info={
 
 pointing/emulate_mouse_from_touch=false
 
+[physics]
+
+common/physics_jitter_fix=1.5
+
 [rendering]
 
+occlusion_culling/bvh_build_quality=0
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+lights_and_shadows/directional_shadow/size=2048
+reflections/sky_reflections/roughness_layers=0
+reflections/sky_reflections/texture_array_reflections=false
+global_illumination/gi/use_half_resolution=true
+camera/depth_of_field/depth_of_field_bokeh_shape=0
 environment/ssao/quality=1
 environment/ssil/quality=1
+anti_aliasing/screen_space_roughness_limiter/enabled=false
+occlusion_culling/occlusion_rays_per_thread=256
 environment/glow/upscale_mode=0
-environment/max_fps=0
+environment/volumetric_fog/use_filter=0
+environment/max_fps=60
